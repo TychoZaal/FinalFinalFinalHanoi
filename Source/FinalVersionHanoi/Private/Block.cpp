@@ -6,20 +6,14 @@
 #include "TimerManager.h"
 #include "Gameframework/Actor.h"
 
-constexpr int amountOfDiscs = 5;
+constexpr int amountOfDiscs = 3;
 AActor* Discs[amountOfDiscs];
-
-using namespace std::this_thread;     // sleep_for, sleep_until
-using namespace std::chrono_literals; // ns, us, ms, s, h, etc.
-using std::chrono::system_clock;
 
 // Sets default values
 ABlock::ABlock()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComponent");
 }
 
 void ABlock::Spawn()
@@ -35,7 +29,12 @@ void ABlock::Spawn()
 				if (counter > 0)
 				{
 					XScale = XScale / (counter * 0.8f);
-					YScale = YScale / (counter * 0.8f);
+					YScale = XScale;
+				}
+				else // First disc set scale higher
+				{
+					XScale = XScale * 1.5f;
+					YScale = XScale;
 				}
 
 				FActorSpawnParameters spawnParams;
@@ -47,29 +46,39 @@ void ABlock::Spawn()
 
 				AActor* newBlock = world->SpawnActor<AActor>(ToSpawn, spawnLocation1 + FVector(0, 0, 0), rotator, spawnParams);;
 				Discs[counter] = newBlock;
-				newBlock->SetActorScale3D(FVector(XScale, YScale, 1.0f));
+				newBlock->SetActorScale3D(FVector(XScale, YScale, 0.2f));
 				counter++;
+
+				if (counter == 1) // Downscale scale again for the rest of the discs
+				{
+					XScale = XScale / 1.5f;
+					YScale = XScale;
+				}
 			}
 		}
 	}
-	GetWorldTimerManager().SetTimer(TimerHandler, this, &ABlock::SwitchBool, 1.0f, false);
+	else
+	{
+		TowerOfHanoi(amountOfDiscs - 1, spawnLocation1, spawnLocation2, spawnLocation3);
+	}
 
-	if (counter == amountOfDiscs)
-		canMove = true;
+	GetWorldTimerManager().SetTimer(TimerHandler, this, &ABlock::SwitchBool, 1.0f, false);
 }
 
-void ABlock::Move(int count, FVector t1, FVector t2, FVector t3)
+void ABlock::TowerOfHanoi(int n, FVector from_rod, FVector aux_rod, FVector to_rod)
 {
 	canMove = false;
-	if (count > 0)
+
+	if (n == 0)
 	{
-		if (Discs[count])
-		{
-			//Move(count - 1, t1, t2, t3);
-			MoveBlocks(Discs[count], t3);
-			//Move(count - 1, t2, t3, t1);
-		}
+		MoveBlocks(Discs[n], to_rod);
+		return;
 	}
+
+	TowerOfHanoi(n - 1, from_rod, aux_rod, to_rod);
+	MoveBlocks(Discs[n], to_rod);
+	TowerOfHanoi(n - 1, aux_rod, to_rod, from_rod);
+	UE_LOG(LogTemp, Error, TEXT("Move function called"));
 }
 
 void ABlock::MoveBlocks(AActor * toMove, FVector newPosition)
@@ -97,7 +106,4 @@ void ABlock::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (canSpawn)
 		Spawn();
-
-	//if (canMove)
-		//Move(amountOfDiscs, spawnLocation1, spawnLocation2, spawnLocation3);
 }

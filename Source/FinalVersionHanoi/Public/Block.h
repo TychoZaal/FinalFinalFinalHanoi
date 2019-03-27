@@ -26,7 +26,7 @@ public:
 		void Spawn();
 
 	UFUNCTION()
-		void Move(int count, FVector t1, FVector t2, FVector t3);
+		void TowerOfHanoi(int n, FVector from_rod, FVector to_rod, FVector aux_rod);
 
 	UFUNCTION()
 		void MoveBlocks(AActor * toMove, FVector newPosition);
@@ -54,7 +54,7 @@ private:
 	UPROPERTY()
 		UWorld * world;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 		int counter;
 
 	UPROPERTY(EditAnywhere)
@@ -63,9 +63,6 @@ private:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditAnywhere, Category = "Components")
-	UStaticMeshComponent* StaticMesh;
 
 public:
 	// Called every frame
