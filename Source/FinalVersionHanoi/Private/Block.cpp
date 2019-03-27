@@ -59,13 +59,13 @@ void ABlock::Spawn()
 	}
 	else
 	{
-		TowerOfHanoi(amountOfDiscs - 1, spawnLocation1, spawnLocation2, spawnLocation3);
+		TowerOfHanoi(amountOfDiscs - 1, spawnLocation1, spawnLocation3, spawnLocation2);
 	}
 
 	GetWorldTimerManager().SetTimer(TimerHandler, this, &ABlock::SwitchBool, 1.0f, false);
 }
 
-void ABlock::TowerOfHanoi(int n, FVector from_rod, FVector aux_rod, FVector to_rod)
+void ABlock::TowerOfHanoi(int n, FVector from_rod, FVector to_rod, FVector aux_rod)
 {
 	canMove = false;
 
