@@ -1,6 +1,7 @@
 #include "Block.h"
 #include <Classes/Components/StaticMeshComponent.h>
 #include "Engine/World.h"
+#include "Engine/Engine.h"
 #include <chrono>
 #include <thread>
 #include "TimerManager.h"
@@ -44,9 +45,9 @@ void ABlock::Spawn()
 
 				FVector spawnLocation = spawnLocation1;
 
-				AActor* newBlock = world->SpawnActor<AActor>(ToSpawn, spawnLocation1 + FVector(0, 0, 0), rotator, spawnParams);;
+				AActor* newBlock = world->SpawnActor<AActor>(ToSpawn, spawnLocation1 + FVector(0, 0, counter * 20), rotator, spawnParams);;
 				Discs[counter] = newBlock;
-				newBlock->SetActorScale3D(FVector(XScale, YScale, 0.2f));
+				newBlock->SetActorScale3D(FVector(XScale, YScale, 0.3f));
 				counter++;
 
 				if (counter == 1) // Downscale scale again for the rest of the discs
@@ -67,7 +68,8 @@ void ABlock::Spawn()
 
 void ABlock::TowerOfHanoi(int n, FVector from_rod, FVector to_rod, FVector aux_rod)
 {
-	canMove = false;
+	doneWithSpawning = false;
+	//engine->SetMaxFPS(3);
 
 	if (n == 0)
 	{

@@ -48,17 +48,23 @@ private:
 	UPROPERTY()
 		FTimerHandle TimerHandler;
 
+	UPROPERTY()
+		FTimerHandle MoveTimerHandler;
+
 	UPROPERTY(EditAnywhere)
 		bool canSpawn;
 
 	UPROPERTY()
 		UWorld * world;
 
+	UPROPERTY()
+		UEngine * engine;
+
 	UPROPERTY(EditAnywhere)
 		int counter;
 
 	UPROPERTY(EditAnywhere)
-		bool canMove;
+		bool doneWithSpawning;
 
 protected:
 	// Called when the game starts or when spawned
