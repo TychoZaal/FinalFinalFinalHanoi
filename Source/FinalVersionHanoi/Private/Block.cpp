@@ -78,12 +78,17 @@ void ABlock::TowerOfHanoi(int n, FVector from_rod, FVector to_rod, FVector aux_r
 	TowerOfHanoi(n - 1, from_rod, aux_rod, to_rod);
 	MoveBlocks(Discs[n], to_rod);
 	TowerOfHanoi(n - 1, aux_rod, to_rod, from_rod);
-	UE_LOG(LogTemp, Error, TEXT("Move function called"));
 }
 
 void ABlock::MoveBlocks(AActor * toMove, FVector newPosition)
 {
 	toMove->SetActorLocation(newPosition);
+	FString name = toMove->GetActorLabel();
+	FString position = newPosition.ToString();
+
+	FString log = name + " moved to position " + position;
+
+	UE_LOG(LogTemp, Error, TEXT("%s "), *log);
 }
 
 void ABlock::SwitchBool()
