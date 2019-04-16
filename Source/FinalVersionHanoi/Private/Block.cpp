@@ -5,10 +5,21 @@
 #include <chrono>
 #include <thread>
 #include "TimerManager.h"
+#include <iostream> 
+#include <list> 
+#include <vector>
 #include "Gameframework/Actor.h"
 
 constexpr int amountOfDiscs = 3;
 AActor* Discs[amountOfDiscs];
+
+struct MovementData
+{
+	FVector towerLocation;
+	int number;
+};
+
+std::vector <MovementData> moves;
 
 // Sets default values
 ABlock::ABlock()
@@ -29,12 +40,12 @@ void ABlock::Spawn()
 			{
 				if (counter > 0)
 				{
-					XScale = XScale / (counter * 0.8f);
+					XScale = XScale + (counter * 0.3f);
 					YScale = XScale;
 				}
-				else // First disc set scale higher
+				else // First disc decreased scale
 				{
-					XScale = XScale * 1.5f;
+					XScale = XScale / 1.1f;
 					YScale = XScale;
 				}
 
@@ -45,58 +56,65 @@ void ABlock::Spawn()
 
 				FVector spawnLocation = spawnLocation1;
 
-				AActor* newBlock = world->SpawnActor<AActor>(ToSpawn, spawnLocation1 + FVector(0, 0, counter * 20), rotator, spawnParams);;
+				AActor* newBlock = world->SpawnActor<AActor>(ToSpawn, spawnLocation1 - FVector(0, 0, counter * 10), rotator, spawnParams);;
 				Discs[counter] = newBlock;
 				newBlock->SetActorScale3D(FVector(XScale, YScale, 0.3f));
 				counter++;
 
 				if (counter == 1) // Downscale scale again for the rest of the discs
 				{
-					XScale = XScale / 1.5f;
+					XScale = XScale * 1.3;
 					YScale = XScale;
 				}
 			}
 		}
+		GetWorldTimerManager().SetTimer(TimerHandler, this, &ABlock::SwitchBool, 1.0f, false);
 	}
-	else
+	else // Start moving the discs
 	{
-		TowerOfHanoi(amountOfDiscs - 1, spawnLocation1, spawnLocation3, spawnLocation2);
+		if (!stoppedSpawning)
+			TowerOfHanoi(amountOfDiscs - 1, spawnLocation1, spawnLocation3, spawnLocation2);
 	}
-
-	GetWorldTimerManager().SetTimer(TimerHandler, this, &ABlock::SwitchBool, 1.0f, false);
 }
 
 void ABlock::TowerOfHanoi(int n, FVector from_rod, FVector to_rod, FVector aux_rod)
 {
-	doneWithSpawning = false;
-	//engine->SetMaxFPS(3);
-
+	stoppedSpawning = true;
 	if (n == 0)
 	{
-		MoveBlocks(Discs[n], to_rod);
+		moves.push_back({ to_rod, n });
+		it = 0;
+		ABlock::MoveBlocks();
 		return;
 	}
 
 	TowerOfHanoi(n - 1, from_rod, aux_rod, to_rod);
-	MoveBlocks(Discs[n], to_rod);
+	moves.push_back({ to_rod, n });
 	TowerOfHanoi(n - 1, aux_rod, to_rod, from_rod);
 }
 
-void ABlock::MoveBlocks(AActor * toMove, FVector newPosition)
+void ABlock::MoveBlocks()
 {
-	toMove->SetActorLocation(newPosition);
-	FString name = toMove->GetActorLabel();
-	FString position = newPosition.ToString();
-
-	FString log = name + " moved to position " + position;
-
-	UE_LOG(LogTemp, Error, TEXT("%s "), *log);
+	GetWorld()->GetTimerManager().SetTimer(MoveTimerHandler, this, &ABlock::ChangeDiscLocation, 1.0f, true);
 }
 
 void ABlock::SwitchBool()
 {
 	canSpawn = true;
 	GetWorldTimerManager().ClearTimer(TimerHandler);
+}
+
+void ABlock::ChangeDiscLocation()
+{
+	if (it < moves.size()) { 
+		UE_LOG(LogTemp, Error, TEXT("Discnumber: %d  to: %s"), moves.at(it).number, *moves.at(it).towerLocation.ToString());
+		Discs[moves.at(it).number]->SetActorLocation(FVector(moves.at(it).towerLocation.X, Discs[moves.at(it).number]->GetActorLocation().Y,  Discs[moves.at(it).number]->GetActorLocation().Z));
+	}
+	else {
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandler); //clear timer
+		return;
+	}
+	it++;
 }
 
 // Called when the game starts or when spawned

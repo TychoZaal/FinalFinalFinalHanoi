@@ -29,12 +29,18 @@ public:
 		void TowerOfHanoi(int n, FVector from_rod, FVector to_rod, FVector aux_rod);
 
 	UFUNCTION()
-		void MoveBlocks(AActor * toMove, FVector newPosition);
+		void MoveBlocks();
 
 	UFUNCTION()
 		void SwitchBool();
 
+	UFUNCTION()
+		void ChangeDiscLocation();
+
 private:
+
+	UPROPERTY(EditAnywhere)
+		int it = 0;
 
 	UPROPERTY(EditAnywhere)
 		FVector spawnLocation1;
@@ -54,6 +60,9 @@ private:
 	UPROPERTY(EditAnywhere)
 		bool canSpawn;
 
+	UPROPERTY(EditAnywhere)
+		bool stoppedSpawning;
+
 	UPROPERTY()
 		UWorld * world;
 
@@ -64,7 +73,7 @@ private:
 		int counter;
 
 	UPROPERTY(EditAnywhere)
-		bool doneWithSpawning;
+		int moveCounter;
 
 protected:
 	// Called when the game starts or when spawned
