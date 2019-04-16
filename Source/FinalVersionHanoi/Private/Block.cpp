@@ -13,12 +13,14 @@
 constexpr int amountOfDiscs = 3;
 AActor* Discs[amountOfDiscs];
 
+// Struct containing movement data, which disc has to go where
 struct MovementData
 {
 	FVector towerLocation;
 	int number;
 };
 
+// Vector containing the order of which discs have to move where
 std::vector <MovementData> moves;
 
 // Sets default values
@@ -28,6 +30,7 @@ ABlock::ABlock()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+// Spawns all discs and sets their scale and position
 void ABlock::Spawn()
 {
 	canSpawn = false;
@@ -77,6 +80,10 @@ void ABlock::Spawn()
 	}
 }
 
+/* Recursive method that will only work if the minimum number of rods is 3. Follows the 132 231 pattern, where it moves a disc from 1 to 3 to 2.
+   The one after that will go 231, where it moves from 2 to 3 to 1. The one after that again follows 132, etc. It always takes the smallest disc of a stack, because math.
+   source: https://www.geeksforgeeks.org/c-program-for-tower-of-hanoi/
+*/
 void ABlock::TowerOfHanoi(int n, FVector from_rod, FVector to_rod, FVector aux_rod)
 {
 	stoppedSpawning = true;
@@ -93,17 +100,20 @@ void ABlock::TowerOfHanoi(int n, FVector from_rod, FVector to_rod, FVector aux_r
 	TowerOfHanoi(n - 1, aux_rod, to_rod, from_rod);
 }
 
+// Loops a timer which will activate the move method each time with a small delay
 void ABlock::MoveBlocks()
 {
 	GetWorld()->GetTimerManager().SetTimer(MoveTimerHandler, this, &ABlock::ChangeDiscLocation, 1.0f, true);
 }
 
+// Switches a bool, which will activate a timer occasionally, which will spawn a new disc
 void ABlock::SwitchBool()
 {
 	canSpawn = true;
 	GetWorldTimerManager().ClearTimer(TimerHandler);
 }
 
+// Changes a disc's position based on the list of structs with the pattern
 void ABlock::ChangeDiscLocation()
 {
 	if (it < moves.size()) { 
